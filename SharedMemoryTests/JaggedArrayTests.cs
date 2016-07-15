@@ -90,7 +90,7 @@ namespace SharedMemoryTests
                 }
             }
 
-            var lol = MakeListOfLists(ja, ListFactory<float>, ListOfListsFactory<float>);
+            var lol = MakeListOfLists(ja);
 
             // Assert
             Assert.AreEqual<int>(4, lol.Count);
@@ -109,20 +109,8 @@ namespace SharedMemoryTests
             }
         }
 
-        public static IList<T> ListFactory<T>(int length)
-        {
-            return new List<T>(length);
-        }
 
-        public static IList<IList<T>> ListOfListsFactory<T>(int length)
-        {
-            return new List<IList<T>>(length);
-        }
-
-        public static IList<IList<T>> MakeListOfLists<T>(
-            T[][] ja,
-            Func<int, IList<T>> listFactory,
-            Func<int, IList<IList<T>>> listOfListsFactory)
+        public static IList<IList<T>> MakeListOfLists<T>(T[][] ja)
         {
             IList<IList<T>> lol = new List<IList<T>>(ja.Length);
             for (var i = 0; i < ja.Length; i++)
