@@ -77,10 +77,10 @@ namespace SharedMemoryTests
     /// The size of the index is 7 using the formula: 1 + {jagged array length} * 2
     /// The size of the data is the sum of the lengths of the individual, 2nd-rank, arrays.
     ///</summary>
-    public struct FlatJaggedArray
+    public struct FlatJaggedArray<T> where T: struct
     {
         private IList<int> _index;
-        private IList<double> _data;
+        private IList<T> _data;
 
         /// <summary>
         /// The length of the jagged array
@@ -102,14 +102,14 @@ namespace SharedMemoryTests
         /// <param name="index">An array of ints of size returned by CalculateRequiredIndexLength()</param>
         /// <param name="data">An array of T of size returned by CalculateRequiredBufferLength()</param>
         /// <param name="ja">The jagged array to copy from.  After this call, the jagged array can be GC'ed</param>
-        public FlatJaggedArray(IList<int> index, IList<double> data, IList<double[]> ja)
+        public FlatJaggedArray(IList<int> index, IList<T> data, IList<T[]> ja)
         {
             _index = index;
             _data = data;
             FillFlat(ja);
         }
 
-        private void FillFlat(IList<double[]> ja)
+        private void FillFlat(IList<T[]> ja)
         {
             _index[0] = ja.Count;
             var previousLength = 0;
@@ -138,11 +138,11 @@ namespace SharedMemoryTests
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
-        public IList<double> MakeArraySlice(int i)
+        public IList<T> MakeArraySlice(int i)
         {
             var length = GetSliceLength(i);
             var offset = GetSliceOffset(i);
-            return new ArraySlice<double>(_data, offset, length);
+            return new ArraySlice<T>(_data, offset, length);
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace SharedMemoryTests
         /// </summary>
         /// <param name="i"></param>
         /// <param name="j"></param>
-        public double this[int i, int j]
+        public T this[int i, int j]
         {
             get
             {
@@ -195,7 +195,7 @@ namespace SharedMemoryTests
         /// </summary>
         /// <param name="ja"></param>
         /// <returns></returns>
-        public static int CalculateRequiredIndexLength(IList<double[]> ja)
+        public static int CalculateRequiredIndexLength(IList<T[]> ja)
         {
             return 1 + ja.Count * 2;
         }
@@ -207,7 +207,7 @@ namespace SharedMemoryTests
         /// </summary>
         /// <param name="ja"></param>
         /// <returns></returns>
-        public static int CalculateRequiredBufferLength(IList<double[]> ja)
+        public static int CalculateRequiredBufferLength(IList<T[]> ja)
         {
             return ja.Sum(t => t.Length);
         }
