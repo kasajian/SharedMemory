@@ -8,8 +8,10 @@ namespace SharedMemoryTests
     /// <summary>
     /// A typical jagged array is an array of objects, where each object is another array.
     /// A buffer cannot contain objects.  Also these individual arrays can be variable length.
-    /// In order to pay a jagged array into a buffer (i.e. one _flat array), we will use
-    /// the following structure
+    /// In order to put a jagged array into a buffer (i.e. one _flat array), we need to flatted
+    /// out all the data into a memory buffer, but then have a mechanism for application code to
+    /// view it as a jagged array.
+    /// The data in the buffer will be structured as follows:
     ///
     /// Example jagged array:
     ///      [
