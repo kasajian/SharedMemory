@@ -25,7 +25,6 @@
 //   http://www.codeproject.com/Articles/14740/Fast-IPC-Communication-Using-Shared-Memory-and-Int
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharedMemory.Utilities;
@@ -72,17 +71,17 @@ namespace SharedMemoryTests
         }
 
         [TestMethod]
-        public void JaggedArray_IListTest()
+        public void JaggedArray_ListCollectionIListTest()
         {
             // Arrange, Act
             var aRandomizer42 = new Random(42);
 
-            var ja = new float[4][];
+            var ja = new double[4][];
             for (var i = 0; i < ja.Length; i++)
             {
                 var len = 7 - i;
 
-                ja[i] = new float[len];
+                ja[i] = new double[len];
 
                 for (var j = 0; j < len; j++)
                 {
@@ -90,41 +89,72 @@ namespace SharedMemoryTests
                 }
             }
 
-            var lol = MakeListOfLists(ja);
+            var lol = ListCollectionLol.MakeListOfLists(ja);
 
             // Assert
-            Assert.AreEqual<int>(4, lol.Count);
+            Assert.AreEqual(4, lol.Count);
             var bRandomizer42 = new Random(42);
             for (var i = 0; i < lol.Count; i++)
             {
                 var len = 7 - i;
 
-                Assert.AreEqual<int>(len, lol[i].Count);
+                Assert.AreEqual(len, lol[i].Count);
 
                 for (var j = 0; j < len; j++)
                 {
                     var r = bRandomizer42.Next();
-                    Assert.AreEqual<float>(r, lol[i][j]);
+                    Assert.AreEqual(r, lol[i][j]);
                 }
             }
         }
 
-
-        public static IList<IList<T>> MakeListOfLists<T>(T[][] ja)
+        [TestMethod]
+        public void JaggedArray_FlatBufferIListTest()
         {
-            IList<IList<T>> lol = new List<IList<T>>(ja.Length);
+            // Arrange, Act
+            var aRandomizer42 = new Random(42);
+
+            var ja = new double[4][];
             for (var i = 0; i < ja.Length; i++)
             {
-                IList<T> items = new List<T>(ja.Length);
-                for (var j = 0; j < ja[i].Length; j++)
+                var len = 7 - i;
+
+                ja[i] = new double[len];
+
+                for (var j = 0; j < len; j++)
                 {
-                    items.Add(ja[i][j]);
-                    Assert.AreEqual(j, items.Count - 1);
+                    ja[i][j] = aRandomizer42.Next();
                 }
-                lol.Add(items);
-                Assert.AreEqual(i, lol.Count - 1);
             }
-            return lol;
+
+            var size = FlatJaggedArray.CalculateRequiredBufferLength(ja);
+            var flat = new double[size];
+            var fja = new FlatJaggedArray(flat, ja);
+
+            // Assert
+            var count = fja.Count;
+            Assert.AreEqual(4, count);
+            var bRandomizer42 = new Random(42);
+            for (var i = 0; i < count; i++)
+            {
+                var len = 7 - i;
+
+                var list2 = fja.MakeArraySlice(i);
+                var count2 = fja.GetSliceLength(i);
+                Assert.AreEqual(len, count2);
+                Assert.AreEqual(len, list2.Count);
+
+                for (var j = 0; j < len; j++)
+                {
+                    var r = bRandomizer42.Next();
+
+                    var v = fja[i, j];
+                    var vv = list2[j];
+
+                    Assert.AreEqual(r, vv);
+                    Assert.AreEqual(r, v);
+                }
+            }
         }
     }
 }
