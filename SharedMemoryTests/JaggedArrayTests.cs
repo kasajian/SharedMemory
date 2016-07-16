@@ -125,9 +125,11 @@ namespace SharedMemoryTests
                 }
             }
 
-            var size = FlatJaggedArray.CalculateRequiredBufferLength(ja);
-            var flat = new double[size];
-            var fja = new FlatJaggedArray(flat, ja);
+            var indexSize = FlatJaggedArray.CalculateRequiredIndexLength(ja);
+            var dataSize = FlatJaggedArray.CalculateRequiredBufferLength(ja);
+            var index = new int[indexSize];
+            var data = new double[dataSize];
+            var fja = new FlatJaggedArray(index, data, ja);
 
             // Assert
             var count = fja.Count;
