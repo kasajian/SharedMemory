@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace SharedMemoryTests
 {
     /// <summary>
-    /// This class is for creating an Lol from a jagged array using a 
+    /// This class is for creating a List of Lists from a jagged array using a 
     /// ListCollection (System.Collections.Generic.List<T>)
     /// </summary>
     class ListOfLists

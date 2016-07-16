@@ -6,11 +6,6 @@ using SharedMemory.Utilities;
 namespace SharedMemoryTests
 {
     /// <summary>
-    /// This class is for creating an Lol from a jagged array using a 
-    /// _flat single-dimensional IList
-    ///
-    /// Internal design:
-    ///
     /// A typical jagged array is an array of objects, where each object is another array.
     /// A buffer cannot contain objects.  Also these individual arrays can be variable length.
     /// In order to pay a jagged array into a buffer (i.e. one _flat array), we will use
