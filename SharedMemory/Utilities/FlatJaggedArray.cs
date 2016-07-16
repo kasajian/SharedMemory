@@ -82,7 +82,7 @@ namespace SharedMemory.Utilities
         private ArraySection<T> _arraySection;
 
         /// <summary>
-        /// Creates the object that can the be used as if it were a jagged array.
+        /// Creates the object that can be used as if it were a jagged array.
         /// The original jagged array is not needed.  All data will be stord in the
         /// supplied buffers.
         /// The index and data parameters must be of size calcuated by the indicated methods.
@@ -112,6 +112,45 @@ namespace SharedMemory.Utilities
                     _arraySection[idata++] = j;
                 }
             }
+        }
+
+        public FlatJaggedArray(ArraySection<int> index, ArraySection<T> arraySection, IList<IList<T>> ja)
+        {
+            this._index = index;
+            this._arraySection = arraySection;
+
+            this._index[0] = ja.Count;
+
+            var previousLength = 0;
+            for (var i = 0; i < ja.Count; i++)
+            {
+                SetCountOf(i, ja[i].Count);
+                SetOffsetOf(i, previousLength);
+                previousLength += ja[i].Count;
+            }
+
+            var idata = 0;
+            foreach (var i1 in ja)
+            {
+                foreach (var j in i1)
+                {
+                    this._arraySection[idata++] = j;
+                }
+            }
+        }
+
+        public FlatJaggedArray(RequiredAllocationSize ras)
+        {
+            this._index = new ArraySection<int>(null, ras.IndexLength);
+            this._arraySection = new ArraySection<T>(null, ras.BufferLength);
+        }
+
+        public RequiredAllocationSize GetRequiredAllocationSize()
+        {
+            return new RequiredAllocationSize
+            {
+                IndexLength = this._index.Offset, BufferLength = this._arraySection.Offset
+            };
         }
 
         /// <summary>
@@ -169,19 +208,27 @@ namespace SharedMemory.Utilities
         /// </summary>
         /// <param name="ja"></param>
         /// <returns></returns>
-        public static int CalculateRequiredIndexLength(IList<T[]> ja)
+        public static int CalculateRequiredIndexLength<TU>(IList<TU> ja)
         {
             return 1 + ja.Count * 2;
         }
 
         /// <summary>
-        /// Given a jagged array, this routine will tell you how big data array has to be.
+        /// Given a jagged array, this routine will tell you how big the data array has to be.
         /// The user will then create an array of T (or any IList of T compatible collection)
         /// and use it when constructing this object.
         /// </summary>
         /// <param name="ja"></param>
         /// <returns></returns>
+        public static int CalculateRequiredBufferLength(IList<IList<T>> ja)
+        {
+            return ja.Sum(t => t.Count);
+        }
         public static int CalculateRequiredBufferLength(IList<T[]> ja)
+        {
+            return ja.Sum(t => t.Length);
+        }
+        public static int CalculateRequiredBufferLength(T[][] ja)
         {
             return ja.Sum(t => t.Length);
         }

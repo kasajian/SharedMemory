@@ -126,15 +126,18 @@ namespace SharedMemory
         /// <summary>
         /// Pointer to the memory mapped view
         /// </summary>
+        [CLSCompliant(false)] 
         protected byte* ViewPtr = null;
         /// <summary>
         /// Pointer to the start of the buffer region of the memory mapped view
         /// </summary>
+        [CLSCompliant(false)] 
         protected byte* BufferStartPtr = null;
         /// <summary>
         /// Pointer to the header within shared memory
         /// </summary>
-        protected Header* Header = null;
+        [CLSCompliant(false)] 
+        protected SharedMemory.Header* Header = null;
 
         #endregion
 

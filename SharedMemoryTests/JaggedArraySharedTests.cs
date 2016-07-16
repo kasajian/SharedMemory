@@ -53,7 +53,7 @@ namespace SharedMemoryTests
                 IJaggedArray<double> fja = new FlatJaggedArray<double>(
                     new ArraySection<int>(index, 0),
                     new ArraySection<double>(buffer, 0),
-                    ja);
+                    (IList<double[]>) ja);
 
                 JaggedArrayTests.VerifySampleJaggedArray(fja);
             }

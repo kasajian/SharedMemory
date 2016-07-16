@@ -39,5 +39,7 @@ namespace SharedMemory.Utilities
         /// <param name="i"></param>
         /// <param name="j"></param>
         T this[int i, int j] { get; set; }
+
+        RequiredAllocationSize GetRequiredAllocationSize();
     }
 }

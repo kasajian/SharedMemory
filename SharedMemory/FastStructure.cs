@@ -41,6 +41,7 @@ namespace SharedMemory
         /// <param name="structure"></param>
         /// <returns>A pointer to the provided structure in memory.</returns>
         /// <see cref="FastStructure{T}.GetPtr"/>
+        [CLSCompliant(false)]
         public static unsafe void* GetPtr<T>(ref T structure)
             where T : struct
         {
@@ -170,6 +171,7 @@ namespace SharedMemory
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
+        [CLSCompliant(false)]
         public unsafe delegate void* GetPtrDelegate(ref T value);
         
         /// <summary>
@@ -189,6 +191,7 @@ namespace SharedMemory
         /// <summary>
         /// The <see cref="GetPtrDelegate"/> delegate for the generated IL to retrieve a pointer to the structure
         /// </summary>
+        [CLSCompliant(false)]
         public unsafe readonly static GetPtrDelegate GetPtr = BuildFunction();
 
         /// <summary>

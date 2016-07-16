@@ -40,4 +40,10 @@ namespace SharedMemory.Utilities
             set { Data[Offset + i] = value; }
         }
     }
+
+    public struct RequiredAllocationSize
+    {
+        public int IndexLength;
+        public int BufferLength;
+    }
 }
