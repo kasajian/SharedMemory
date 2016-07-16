@@ -43,6 +43,7 @@
     <Compile Include="Buffer.cs" />
     <Compile Include="UnsafeNativeMethods.cs" />
     <Compile Include="Utilities\ArraySlice.cs" />
+    <Compile Include="Utilities\FlatJaggedArray.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="publickey.snk" />

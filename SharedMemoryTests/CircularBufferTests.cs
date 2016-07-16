@@ -25,7 +25,6 @@
 //   http://www.codeproject.com/Articles/14740/Fast-IPC-Communication-Using-Shared-Memory-and-Int
 
 using System;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
