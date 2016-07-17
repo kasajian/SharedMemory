@@ -78,6 +78,7 @@
     <Compile Include="ArraySliceTests.cs" />
     <Compile Include="CircularBufferTests.cs" />
     <Compile Include="JaggedArraySharedTests.cs" />
+    <Compile Include="MultiDimArray.cs" />
     <Compile Include="JaggedArrayTests.cs" />
     <Compile Include="ListOfLists.cs" />
     <Compile Include="NormalJaggedArray.cs" />

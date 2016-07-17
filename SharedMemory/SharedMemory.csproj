@@ -42,7 +42,9 @@
     <Compile Include="Array.cs" />
     <Compile Include="Buffer.cs" />
     <Compile Include="UnsafeNativeMethods.cs" />
+    <Compile Include="Utilities\ArraySection.cs" />
     <Compile Include="Utilities\ArraySlice.cs" />
+    <Compile Include="Utilities\FlatMultiDimArray.cs" />
     <Compile Include="Utilities\FlatJaggedArray.cs" />
     <Compile Include="Utilities\IJaggedArray.cs" />
   </ItemGroup>
