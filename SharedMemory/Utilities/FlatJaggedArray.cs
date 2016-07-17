@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using SharedMemory.Utilities;
 
-namespace SharedMemoryTests
+namespace SharedMemory.Utilities
 {
     /// <summary>
     /// A typical jagged array is an array of objects, where each object is another array.
@@ -23,7 +21,8 @@ namespace SharedMemoryTests
     ///
     /// For "buffers", we will require two ILists, one will contain integers for indexing, and one of type T
     /// for the actual value type being stored.  We use IList instead of a buffer so this implementation
-    /// is generalized.
+    /// is generalized.  Actually, we encapsulate it in a ArraySection struct so that we can use a larger IList 
+    /// which can hold multiple such buffers.
     ///  
     /// We organize our data in such a way that a view of the above structure can be maintained.
     ///
@@ -77,21 +76,10 @@ namespace SharedMemoryTests
     /// The size of the index is 7 using the formula: 1 + {jagged array length} * 2
     /// The size of the data is the sum of the lengths of the individual, 2nd-rank, arrays.
     ///</summary>
-    public struct FlatJaggedArray<T> where T: struct
+    public struct FlatJaggedArray<T> : IJaggedArray<T> where T: struct
     {
-        private IList<int> _index;
-        private IList<T> _data;
-
-        /// <summary>
-        /// The length of the jagged array
-        /// </summary>
-        public int Count
-        {
-            get
-            {
-                return _index[0];
-            }
-        }
+        private ArraySection<int> _index;
+        private ArraySection<T> _arraySection;
 
         /// <summary>
         /// Creates the object that can the be used as if it were a jagged array.
@@ -100,23 +88,19 @@ namespace SharedMemoryTests
         /// The index and data parameters must be of size calcuated by the indicated methods.
         /// </summary>
         /// <param name="index">An array of ints of size returned by CalculateRequiredIndexLength()</param>
-        /// <param name="data">An array of T of size returned by CalculateRequiredBufferLength()</param>
+        /// <param name="arraySection">An array of T of size returned by CalculateRequiredBufferLength()</param>
         /// <param name="ja">The jagged array to copy from.  After this call, the jagged array can be GC'ed</param>
-        public FlatJaggedArray(IList<int> index, IList<T> data, IList<T[]> ja)
+        public FlatJaggedArray(ArraySection<int> index, ArraySection<T> arraySection, IList<T[]> ja)
         {
             _index = index;
-            _data = data;
-            FillFlat(ja);
-        }
-
-        private void FillFlat(IList<T[]> ja)
-        {
+            _arraySection = arraySection;
             _index[0] = ja.Count;
+
             var previousLength = 0;
             for (var i = 0; i < ja.Count; i++)
             {
-                SetSliceLength(i, ja[i].Length);
-                SetSliceOffset(i, previousLength);
+                SetCountOf(i, ja[i].Length);
+                SetOffsetOf(i, previousLength);
                 previousLength += ja[i].Length;
             }
 
@@ -125,10 +109,15 @@ namespace SharedMemoryTests
             {
                 foreach (var j in i)
                 {
-                    _data[idata++] = j;
+                    _arraySection[idata++] = j;
                 }
             }
         }
+
+        /// <summary>
+        /// The length of the jagged array
+        /// </summary>
+        public int Count { get { return _index[0]; } }
 
         /// <summary>
         /// Create an Array slice for the given array.
@@ -138,11 +127,11 @@ namespace SharedMemoryTests
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
-        public IList<T> MakeArraySlice(int i)
+        public IList<T> ToListOf(int i)
         {
-            var length = GetSliceLength(i);
-            var offset = GetSliceOffset(i);
-            return new ArraySlice<T>(_data, offset, length);
+            var length = CountOf(i);
+            var offset = OffsetOf(i);
+            return new ArraySlice<T>(_arraySection.Data, _arraySection.Offset + offset, length);
         }
 
         /// <summary>
@@ -150,24 +139,9 @@ namespace SharedMemoryTests
         /// </summary>
         /// <param name="i"></param>
         /// <returns></returns>
-        public int GetSliceLength(int i)
+        public int CountOf(int i)
         {
             return _index[i * 2 + 1];
-        }
-
-        private void SetSliceLength(int i, int length)
-        {
-            _index[i*2 + 1] = length;
-        }
-
-        private int GetSliceOffset(int i)
-        {
-            return _index[i * 2 + 2];
-        }
-
-        private void SetSliceOffset(int i, int offset)
-        {
-            _index[i*2 + 2] = offset;
         }
 
         /// <summary>
@@ -179,12 +153,12 @@ namespace SharedMemoryTests
         {
             get
             {
-                return _data[GetSliceOffset(i) + j];
+                return _arraySection[OffsetOf(i) + j];
             }
 
             set
             {
-                _data[GetSliceOffset(i) + j] = value;
+                _arraySection[OffsetOf(i) + j] = value;
             }
         }
 
@@ -210,6 +184,60 @@ namespace SharedMemoryTests
         public static int CalculateRequiredBufferLength(IList<T[]> ja)
         {
             return ja.Sum(t => t.Length);
+        }
+
+        private void SetCountOf(int i, int length)
+        {
+            _index[i * 2 + 1] = length;
+        }
+
+        private int OffsetOf(int i)
+        {
+            return _index[i * 2 + 2];
+        }
+
+        private void SetOffsetOf(int i, int offset)
+        {
+            _index[i * 2 + 2] = offset;
+        }
+    }
+
+    /// <summary>
+    /// Represents a Buffer in terms of an IList and an offset within it representing where the buffer starts
+    /// This is only used for constructing a FlatJaggedArray.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public struct ArraySection<T> where T : struct
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="offset"></param>
+        public ArraySection(IList<T> data, int offset)
+        {
+            Data = data;
+            Offset = offset;
+        }
+
+        /// <summary>
+        /// The bigger IList.  We just have access into a window into it, starting at Offset.
+        /// </summary>
+        public IList<T> Data;
+
+        /// <summary>
+        /// The offset into Data where the actual data starts.
+        /// </summary>
+        public int Offset;
+
+        /// <summary>
+        /// Returns the element at the index
+        /// </summary>
+        /// <param name="i"></param>
+        public T this[int i]
+        {
+            get { return Data[Offset + i]; }
+            set { Data[Offset + i] = value; }
         }
     }
 }

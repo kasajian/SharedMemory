@@ -44,6 +44,7 @@
     <Compile Include="UnsafeNativeMethods.cs" />
     <Compile Include="Utilities\ArraySlice.cs" />
     <Compile Include="Utilities\FlatJaggedArray.cs" />
+    <Compile Include="Utilities\IJaggedArray.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="publickey.snk" />

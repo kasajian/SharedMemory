@@ -25,7 +25,10 @@
 //   http://www.codeproject.com/Articles/14740/Fast-IPC-Communication-Using-Shared-Memory-and-Int
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SharedMemory.Utilities;
 
 namespace SharedMemoryTests
 {
@@ -109,50 +112,164 @@ namespace SharedMemoryTests
         [TestMethod]
         public void JaggedArray_FlatBufferIListTest()
         {
-            // Arrange, Act
-            var aRandomizer42 = new Random(42);
+            var jaDoubles = new double[4][];
+            FlatBufferIListTest(GetRandomNumbers(jaDoubles), jaDoubles);
 
-            var ja = new double[4][];
-            for (var i = 0; i < ja.Length; i++)
+            var jaFloat = new float[4][];
+            FlatBufferIListTest(GetRandomNumbers(jaFloat), jaFloat);
+
+            var jaInt = new int[4][];
+            FlatBufferIListTest(GetRandomNumbers(jaInt), jaInt);
+
+            var jaLong = new long[4][];
+            FlatBufferIListTest(GetRandomNumbers(jaLong), jaLong);
+
+            var jaDateTime = new DateTime[4][];
+            FlatBufferIListTest(GetRandomNumbers(jaDateTime), jaDateTime);
+        }
+
+        [TestMethod]
+        public void JaggedArray_Normalized()
+        {
+            var ja = new double[2][];
+            ja[0] = new double[4];
+            ja[1] = new double[3];
+
+            ja[0][3] = 3.14159265358;
+            ja[1][2] = 2.718281828459045;
+
+            IJaggedArray<double> nja = new NormalJaggedArray<double>(ja);
+
+            var fja = new FlatJaggedArray<double>(
+                new ArraySection<int>(new int[FlatJaggedArray<double>.CalculateRequiredIndexLength(ja)], 0),
+                new ArraySection<double>(new double[FlatJaggedArray<double>.CalculateRequiredBufferLength(ja)], 0),
+                ja);
+
+            // Normal C# syntax:
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(3.14159265358, ja[0][3]));
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, ja[1][2]));
+            Assert.AreEqual(2, ja.Length);
+            Assert.AreEqual(4, ja[0].Length);
+            Assert.AreEqual(3, ja[1].Length);
+            IList<double> jIlist = ja[1].ToList();
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, jIlist[2]));
+
+            // Using IJaggedArray
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(3.14159265358, nja[0, 3]));
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, nja[1, 2]));
+            Assert.AreEqual(2, nja.Count);
+            Assert.AreEqual(4, nja.CountOf(0));
+            Assert.AreEqual(3, nja.CountOf(1));
+            IList<double> nIlist = nja.ToListOf(1);
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, nIlist[2]));
+
+            // Using FlatJaggedArray
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(3.14159265358, fja[0, 3]));
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, fja[1, 2]));
+            Assert.AreEqual(2, fja.Count);
+            Assert.AreEqual(4, fja.CountOf(0));
+            Assert.AreEqual(3, fja.CountOf(1));
+            IList<double> fIlist = fja.ToListOf(1);
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, fIlist[2]));
+        }
+
+        private static void FlatBufferIListTest<T>(Queue<T> nums, IList<T[]> ja) where T: struct
+        {
+            var n = new Queue<T>(nums);
+            for (var i = 0; i < ja.Count; i++)
             {
                 var len = 7 - i;
 
-                ja[i] = new double[len];
+                ja[i] = new T[len];
 
                 for (var j = 0; j < len; j++)
                 {
-                    ja[i][j] = aRandomizer42.Next();
+                    ja[i][j] = n.Dequeue();
                 }
             }
 
-            var index = new int[FlatJaggedArray<double>.CalculateRequiredIndexLength(ja)];
-            var data = new double[FlatJaggedArray<double>.CalculateRequiredBufferLength(ja)];
-            var fja = new FlatJaggedArray<double>(index, data, ja);
+            var arbitraryOffset = new Random().Next(0, 50);
+            var index = new int[FlatJaggedArray<T>.CalculateRequiredIndexLength(ja) + arbitraryOffset];
+            var data = new T[FlatJaggedArray<T>.CalculateRequiredBufferLength(ja) + arbitraryOffset];
+            var fja = new FlatJaggedArray<T>(
+                new ArraySection<int>(index, arbitraryOffset), 
+                new ArraySection<T>(data, arbitraryOffset),
+                ja);
 
             // Assert
             var count = fja.Count;
             Assert.AreEqual(4, count);
-            var bRandomizer42 = new Random(42);
+            n = new Queue<T>(nums);
             for (var i = 0; i < count; i++)
             {
                 var len = 7 - i;
 
-                var list2 = fja.MakeArraySlice(i);
-                var count2 = fja.GetSliceLength(i);
+                var list = fja.ToListOf(i);
+                var count2 = fja.CountOf(i);
                 Assert.AreEqual(len, count2);
-                Assert.AreEqual(len, list2.Count);
+                Assert.AreEqual(len, list.Count);
 
                 for (var j = 0; j < len; j++)
                 {
-                    var r = bRandomizer42.Next();
+                    var r = n.Dequeue();
 
-                    var v = fja[i, j];
-                    var vv = list2[j];
-
-                    Assert.AreEqual(r, vv);
-                    Assert.AreEqual(r, v);
+                    Assert.AreEqual(r, list[j]);
+                    Assert.AreEqual(r, fja[i, j]);
                 }
             }
         }
+
+        private static Queue<double> GetRandomNumbers(ICollection<double[]> ja)
+        {
+            var aRandomizer42 = new Random(42);
+            var q = new Queue<double>();
+            for (var i = 0; i < ja.Count; i++) for (var j = 0; j < 7 - i; j++) q.Enqueue(aRandomizer42.NextDouble());
+            return q;
+        }
+        private static Queue<float> GetRandomNumbers(ICollection<float[]> ja)
+        {
+            var aRandomizer42 = new Random(42);
+            var q = new Queue<float>();
+            for (var i = 0; i < ja.Count; i++) for (var j = 0; j < 7 - i; j++) q.Enqueue(aRandomizer42.Next());
+            return q;
+        }
+        private static Queue<int> GetRandomNumbers(ICollection<int[]> ja)
+        {
+            var aRandomizer42 = new Random(42);
+            var q = new Queue<int>();
+            for (var i = 0; i < ja.Count; i++) for (var j = 0; j < 7 - i; j++) q.Enqueue(aRandomizer42.Next());
+            return q;
+        }
+        private static Queue<long> GetRandomNumbers(ICollection<long[]> ja)
+        {
+            var aRandomizer42 = new Random(42);
+            var q = new Queue<long>();
+            for (var i = 0; i < ja.Count; i++) for (var j = 0; j < 7 - i; j++) q.Enqueue(aRandomizer42.Next());
+            return q;
+        }
+        private static Queue<DateTime> GetRandomNumbers(ICollection<DateTime[]> ja)
+        {
+            var aRandomizer42 = new Random(42);
+            var q = new Queue<DateTime>();
+            for (var i = 0; i < ja.Count; i++) for (var j = 0; j < 7 - i; j++) q.Enqueue(new DateTime(aRandomizer42.Next()));
+            return q;
+        }
+    }
+
+    /// <summary>
+    /// An abstraction of a jagged array.
+    /// This is wrapper for a C# jagged array (ie. [5][4])
+    /// By using this interface, then the same code can work with FlatJaggedArray and 
+    /// NormalJaggedArray
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public struct NormalJaggedArray<T> : IJaggedArray<T> where T: struct
+    {
+        private T[][] ja;
+        public NormalJaggedArray(T[][] ja) { this.ja = ja; }
+        public T this[int i, int j] { get { return ja[i][j]; } set { ja[i][j] = value; } }
+        public int Count { get { return ja.Length; } }
+        public int CountOf(int i) { return ja[i].Length; }
+        public IList<T> ToListOf(int i) { return ja[i].ToList(); }
     }
 }
