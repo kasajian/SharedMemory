@@ -131,16 +131,11 @@ namespace SharedMemoryTests
         [TestMethod]
         public void JaggedArray_Normalized()
         {
-            var ja = new double[2][];
-            ja[0] = new double[4];
-            ja[1] = new double[3];
-
-            ja[0][3] = 3.14159265358;
-            ja[1][2] = 2.718281828459045;
+            var ja = GetSampleJaggedArray();
 
             IJaggedArray<double> nja = new NormalJaggedArray<double>(ja);
 
-            var fja = new FlatJaggedArray<double>(
+            IJaggedArray<double> fja = new FlatJaggedArray<double>(
                 new ArraySection<int>(new int[FlatJaggedArray<double>.CalculateRequiredIndexLength(ja)], 0),
                 new ArraySection<double>(new double[FlatJaggedArray<double>.CalculateRequiredBufferLength(ja)], 0),
                 ja);
@@ -155,22 +150,32 @@ namespace SharedMemoryTests
             Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, jIlist[2]));
 
             // Using IJaggedArray
-            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(3.14159265358, nja[0, 3]));
-            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, nja[1, 2]));
-            Assert.AreEqual(2, nja.Count);
-            Assert.AreEqual(4, nja.CountOf(0));
-            Assert.AreEqual(3, nja.CountOf(1));
-            IList<double> nIlist = nja.ToListOf(1);
-            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, nIlist[2]));
+            VerifySampleJaggedArray(nja);
 
             // Using FlatJaggedArray
-            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(3.14159265358, fja[0, 3]));
-            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, fja[1, 2]));
-            Assert.AreEqual(2, fja.Count);
-            Assert.AreEqual(4, fja.CountOf(0));
-            Assert.AreEqual(3, fja.CountOf(1));
-            IList<double> fIlist = fja.ToListOf(1);
+            VerifySampleJaggedArray(fja);
+        }
+
+        public static void VerifySampleJaggedArray(IJaggedArray<double> ija)
+        {
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(3.14159265358, ija[0, 3]));
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, ija[1, 2]));
+            Assert.AreEqual(2, ija.Count);
+            Assert.AreEqual(4, ija.CountOf(0));
+            Assert.AreEqual(3, ija.CountOf(1));
+            IList<double> fIlist = ija.ToListOf(1);
             Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, fIlist[2]));
+        }
+
+        public static double[][] GetSampleJaggedArray()
+        {
+            var ja = new double[2][];
+            ja[0] = new double[4];
+            ja[1] = new double[3];
+
+            ja[0][3] = 3.14159265358;
+            ja[1][2] = 2.718281828459045;
+            return ja;
         }
 
         private static void FlatBufferIListTest<T>(Queue<T> nums, IList<T[]> ja) where T: struct
@@ -254,22 +259,5 @@ namespace SharedMemoryTests
             for (var i = 0; i < ja.Count; i++) for (var j = 0; j < 7 - i; j++) q.Enqueue(new DateTime(aRandomizer42.Next()));
             return q;
         }
-    }
-
-    /// <summary>
-    /// An abstraction of a jagged array.
-    /// This is wrapper for a C# jagged array (ie. [5][4])
-    /// By using this interface, then the same code can work with FlatJaggedArray and 
-    /// NormalJaggedArray
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public struct NormalJaggedArray<T> : IJaggedArray<T> where T: struct
-    {
-        private T[][] ja;
-        public NormalJaggedArray(T[][] ja) { this.ja = ja; }
-        public T this[int i, int j] { get { return ja[i][j]; } set { ja[i][j] = value; } }
-        public int Count { get { return ja.Length; } }
-        public int CountOf(int i) { return ja[i].Length; }
-        public IList<T> ToListOf(int i) { return ja[i].ToList(); }
     }
 }
