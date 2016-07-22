@@ -30,6 +30,7 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
+using SharedMemory.MemoryMappedFiles;
 
 namespace SharedMemory
 {

@@ -90,7 +90,7 @@ namespace SharedMemoryTests
                 }
             }
 
-            var lol = ListOfLists.MakeListOfLists(ja);
+            var lol = JaggedArrayHelpers.MakeListOfListFromJaggedArray(ja);
 
             // Assert
             Assert.AreEqual(4, lol.Count);
@@ -129,16 +129,29 @@ namespace SharedMemoryTests
         }
 
         [TestMethod]
-        public void JaggedArray_Normalized()
+        public void JaggedArray_NormalizedArray()
         {
             var ja = GetSampleJaggedArray();
 
             IJaggedArray<double> nja = new NormalJaggedArray<double>(ja);
 
+            Assert.AreEqual(
+@"[
+[ [0],
+[0],
+[0],
+[3.14159265358]
+ ],[ [0],
+[0],
+[2.71828182845905]
+ ]]
+"
+, nja.Dump());
+
             IJaggedArray<double> fja = new FlatJaggedArray<double>(
                 new ArraySection<int>(new int[FlatJaggedArray<double>.CalculateRequiredIndexLength(ja)], 0),
                 new ArraySection<double>(new double[FlatJaggedArray<double>.CalculateRequiredBufferLength(ja)], 0),
-                ja);
+                (IList <double[]>) ja);
 
             // Normal C# syntax:
             Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(3.14159265358, ja[0][3]));
@@ -147,6 +160,34 @@ namespace SharedMemoryTests
             Assert.AreEqual(4, ja[0].Length);
             Assert.AreEqual(3, ja[1].Length);
             IList<double> jIlist = ja[1].ToList();
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, jIlist[2]));
+
+            // Using IJaggedArray
+            VerifySampleJaggedArray(nja);
+
+            // Using FlatJaggedArray
+            VerifySampleJaggedArray(fja);
+        }
+
+        [TestMethod]
+        public void JaggedArray_NormalizedList()
+        {
+            var lol = GetSampleJaggedArray().MakeListOfListFromJaggedArray();
+
+            IJaggedArray<double> nja = new NormalJaggedList<double>(lol);
+
+            IJaggedArray<double> fja = new FlatJaggedArray<double>(
+                new ArraySection<int>(new int[FlatJaggedArray<double>.CalculateRequiredIndexLength(lol)], 0),
+                new ArraySection<double>(new double[FlatJaggedArray<double>.CalculateRequiredBufferLength(lol)], 0),
+                lol);
+
+            // Normal C# syntax:
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(3.14159265358, lol[0][3]));
+            Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, lol[1][2]));
+            Assert.AreEqual(2, lol.Count);
+            Assert.AreEqual(4, lol[0].Count);
+            Assert.AreEqual(3, lol[1].Count);
+            IList<double> jIlist = lol[1].ToList();
             Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, jIlist[2]));
 
             // Using IJaggedArray

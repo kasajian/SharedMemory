@@ -1,19 +1,8 @@
-﻿// ------------------------------------------------------------------------------------------------------------
-// <copyright company="Schneider Electric Software, LLC" file="NormalJaggedArray.cs">
-//   © 2016 Schneider Electric Software, LLC. All rights reserved.
-//
-// THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY
-// KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-// </copyright>
-// ------------------------------------------------------------------------------------------------------------
+﻿using System.Collections.Generic;
+using System.Linq;
 
-namespace Invensys.Utilities.Memory
+namespace SharedMemory.Utilities
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
     /// <summary>
     /// An abstraction of a jagged array.
     /// This is wrapper for a C# jagged array (ie. [5][4])
@@ -52,4 +41,3 @@ namespace Invensys.Utilities.Memory
         public IList<T> ToListOf(int i) { return ja[i].ToList(); }
     }
 }
-//        

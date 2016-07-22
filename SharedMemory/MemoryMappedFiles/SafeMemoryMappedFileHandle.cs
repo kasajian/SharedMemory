@@ -23,14 +23,12 @@
 // The SharedMemory library is inspired by the following Code Project article:
 //   "Fast IPC Communication Using Shared Memory and InterlockedCompareExchange"
 //   http://www.codeproject.com/Articles/14740/Fast-IPC-Communication-Using-Shared-Memory-and-Int
-using SharedMemory;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Permissions;
-using System.Text;
 
-namespace Microsoft.Win32.SafeHandles
+using System;
+using System.Security.Permissions;
+using Microsoft.Win32.SafeHandles;
+
+namespace SharedMemory.MemoryMappedFiles
 {
 #if !NET40Plus
     /// <summary>

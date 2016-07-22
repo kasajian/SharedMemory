@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using SharedMemory.MemoryMappedFiles;
 
 namespace SharedMemory
 {
@@ -45,7 +46,7 @@ namespace SharedMemory
         public long SharedMemorySize;
 
         /// <summary>
-        /// Flag indicating whether the owner of the buffer has closed its <see cref="System.IO.MemoryMappedFiles.MemoryMappedFile"/> and <see cref="System.IO.MemoryMappedFiles.MemoryMappedViewAccessor"/>.
+        /// Flag indicating whether the owner of the buffer has closed its <see cref="MemoryMappedFile"/> and <see cref="MemoryMappedViewAccessor"/>.
         /// </summary>
         [CLSCompliant(false)]
         public volatile int Shutdown;

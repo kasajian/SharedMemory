@@ -26,12 +26,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using System.Text;
 using System.Threading;
+using SharedMemory.MemoryMappedFiles;
 
 namespace SharedMemory
 {
