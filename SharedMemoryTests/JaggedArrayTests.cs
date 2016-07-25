@@ -90,7 +90,7 @@ namespace SharedMemoryTests
                 }
             }
 
-            var lol = JaggedArrayHelpers.MakeListOfListFromJaggedArray(ja);
+            var lol = ja.MakeListOfListFromJaggedArray();
 
             // Assert
             Assert.AreEqual(4, lol.Count);
@@ -131,22 +131,9 @@ namespace SharedMemoryTests
         [TestMethod]
         public void JaggedArray_NormalizedArray()
         {
-            var ja = GetSampleJaggedArray();
+            var ja = ArrayHelpersTests.GetSampleJaggedArray();
 
             IJaggedArray<double> nja = new NormalJaggedArray<double>(ja);
-
-            Assert.AreEqual(
-@"[
-[ [0],
-[0],
-[0],
-[3.14159265358]
- ],[ [0],
-[0],
-[2.71828182845905]
- ]]
-"
-, nja.Dump());
 
             IJaggedArray<double> fja = new FlatJaggedArray<double>(
                 new ArraySection<int>(new int[FlatJaggedArray<double>.CalculateRequiredIndexLength(ja)], 0),
@@ -172,9 +159,9 @@ namespace SharedMemoryTests
         [TestMethod]
         public void JaggedArray_NormalizedList()
         {
-            var lol = GetSampleJaggedArray().MakeListOfListFromJaggedArray();
+            var lol = ArrayHelpersTests.GetSampleJaggedArray().MakeListOfListFromJaggedArray();
 
-            IJaggedArray<double> nja = new NormalJaggedList<double>(lol);
+            IJaggedArray<double> njl = new NormalJaggedList<double>(lol);
 
             IJaggedArray<double> fja = new FlatJaggedArray<double>(
                 new ArraySection<int>(new int[FlatJaggedArray<double>.CalculateRequiredIndexLength(lol)], 0),
@@ -191,7 +178,7 @@ namespace SharedMemoryTests
             Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, jIlist[2]));
 
             // Using IJaggedArray
-            VerifySampleJaggedArray(nja);
+            VerifySampleJaggedArray(njl);
 
             // Using FlatJaggedArray
             VerifySampleJaggedArray(fja);
@@ -206,17 +193,6 @@ namespace SharedMemoryTests
             Assert.AreEqual(3, ija.CountOf(1));
             IList<double> fIlist = ija.ToListOf(1);
             Assert.IsTrue(ArraySliceTests.ApproximatelyEqual(2.718281828459045, fIlist[2]));
-        }
-
-        public static double[][] GetSampleJaggedArray()
-        {
-            var ja = new double[2][];
-            ja[0] = new double[4];
-            ja[1] = new double[3];
-
-            ja[0][3] = 3.14159265358;
-            ja[1][2] = 2.718281828459045;
-            return ja;
         }
 
         private static void FlatBufferIListTest<T>(Queue<T> nums, IList<T[]> ja) where T: struct

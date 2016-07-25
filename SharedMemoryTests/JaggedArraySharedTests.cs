@@ -39,7 +39,7 @@ namespace SharedMemoryTests
         [TestMethod]
         public void JaggedArray_RawArrayTest()
         {
-            var ja = JaggedArrayTests.GetSampleJaggedArray();
+            var ja = ArrayHelpersTests.GetSampleJaggedArray();
 
             var calculateRequiredIndexLength = FlatJaggedArray<double>.CalculateRequiredIndexLength(ja);
             var calculateRequiredBufferLength = FlatJaggedArray<double>.CalculateRequiredBufferLength(ja);

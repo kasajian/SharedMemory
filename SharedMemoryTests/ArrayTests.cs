@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SharedMemory;
 using System.Runtime.InteropServices;
@@ -397,6 +398,21 @@ namespace SharedMemoryTests
 
                 IList<int> a = sma;
                 Assert.IsTrue(a.IsReadOnly);
+            }
+        }
+        [TestMethod]
+        public void IEnumerable_ToArray()
+        {
+            var name = Guid.NewGuid().ToString();
+            using (var sma = new Array<int>(name, 10))
+            {
+                sma[0] = 3;
+                sma[4] = 10;
+
+                IEnumerable<int> e = sma;
+
+                var a = e.ToArray();
+                Assert.AreEqual(10, a[4]);
             }
         }
     }

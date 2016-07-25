@@ -46,7 +46,7 @@
     <Compile Include="Utilities\ArraySlice.cs" />
     <Compile Include="Utilities\FlatJaggedArray.cs" />
     <Compile Include="Utilities\IJaggedArray.cs" />
-    <Compile Include="Utilities\JaggedArrayHelpers.cs" />
+    <Compile Include="Utilities\ArrayHelpers.cs" />
     <Compile Include="Utilities\NormalJaggedArray.cs" />
   </ItemGroup>
   <ItemGroup>

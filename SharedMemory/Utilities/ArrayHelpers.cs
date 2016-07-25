@@ -9,7 +9,7 @@ namespace SharedMemory.Utilities
     /// <summary>
     /// 
     /// </summary>
-    public static class JaggedArrayHelpers
+    public static class ArrayHelpers
     {
         /// <summary>
         /// 

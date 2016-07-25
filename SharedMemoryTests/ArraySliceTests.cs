@@ -69,20 +69,6 @@ namespace SharedMemoryTests
             Assert.IsTrue(asList.Contains(1024));
             Assert.IsFalse(asList.Contains(1025));
             Assert.IsTrue(ApproximatelyEqual(1081.85827, asList.Sum()));
-
-            Assert.AreEqual(
-@"[
-[1],
-[2.71828],
-[3.14],
-[4],
-[4.99999],
-[42],
-[1024]
-]
-"
-, a.Dump());
-
         }
 
         [TestMethod]
