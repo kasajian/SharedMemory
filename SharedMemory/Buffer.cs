@@ -25,13 +25,16 @@
 //   http://www.codeproject.com/Articles/14740/Fast-IPC-Communication-Using-Shared-Memory-and-Int
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+
+#if NET40Plus
+using System.IO.MemoryMappedFiles;
+#else
+using SharedMemory.MemoryMappedFiles;
+#endif
+
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
-using System.Text;
 using System.Threading;
-using SharedMemory.MemoryMappedFiles;
 
 namespace SharedMemory
 {
@@ -43,6 +46,8 @@ namespace SharedMemory
     [PermissionSet(SecurityAction.InheritanceDemand)]
     public abstract unsafe class Buffer : IDisposable
     {
+        protected const string NoFile = "*";
+
         #region Public/Protected properties
 
         /// <summary>
@@ -54,7 +59,12 @@ namespace SharedMemory
         /// The buffer size
         /// </summary>
         public long BufferSize { get; private set; }
-        
+
+        /// <summary>
+        /// The file name, or set to Buffer.NoFile if no filename is used (non-persisting) 
+        /// </summary>
+        public string FileName { get; private set; }
+
         /// <summary>
         /// The total shared memory size, including header and buffer.
         /// </summary>
@@ -158,7 +168,7 @@ namespace SharedMemory
         /// </code>
         /// </para>
         /// </remarks>
-        protected Buffer(string name, long bufferSize, bool ownsSharedMemory)
+        protected Buffer(string name, long bufferSize, bool ownsSharedMemory, string fileName)
         {
             #region Argument validation
             if (name == String.Empty || name == null)
@@ -178,6 +188,8 @@ namespace SharedMemory
             {
                 BufferSize = bufferSize;
             }
+
+            FileName = fileName;
         }
 
         /// <summary>
@@ -211,7 +223,9 @@ namespace SharedMemory
                 if (IsOwnerOfSharedMemory)
                 {
                     // Create a new shared memory mapping
-                    Mmf = MemoryMappedFile.CreateNew(Name, SharedMemorySize);
+                    Mmf = FileName == NoFile
+                        ? MemoryMappedFile.CreateNew(Name, SharedMemorySize)
+                        : MemoryMappedFile.CreateFromFile(FileName, System.IO.FileMode.OpenOrCreate, Name, SharedMemorySize);
 
                     // Create a view to the entire region of the shared memory
                     View = Mmf.CreateViewAccessor(0, SharedMemorySize, MemoryMappedFileAccess.ReadWrite);
