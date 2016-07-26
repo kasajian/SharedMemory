@@ -24,12 +24,11 @@
 //   "Fast IPC Communication Using Shared Memory and InterlockedCompareExchange"
 //   http://www.codeproject.com/Articles/14740/Fast-IPC-Communication-Using-Shared-Memory-and-Int
 
-using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
+using SharedMemory;
 
-namespace SharedMemory.MemoryMappedFiles
+namespace System.IO.MemoryMappedFiles
 {
 #if !NET40Plus
     /// <summary>

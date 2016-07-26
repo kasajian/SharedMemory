@@ -26,11 +26,7 @@
 
 using System;
 
-#if NET40Plus
 using System.IO.MemoryMappedFiles;
-#else
-using SharedMemory.MemoryMappedFiles;
-#endif
 
 using System.Runtime.InteropServices;
 using System.Security.Permissions;

@@ -26,7 +26,7 @@
 
 using System;
 
-namespace SharedMemory.MemoryMappedFiles
+namespace System.IO.MemoryMappedFiles
 {
 #if !NET40Plus
     /// <summary>
